@@ -33,8 +33,6 @@ This driver uEagle-ATM for GNU/Linux (Sagem F@st 800 E4).
 
 %package firmware
 Summary:	The non-free firmware for eagle (SAGEM f@st) USB ADSL modem
-Version:	4
-Release:	1
 License:	restricted, non-distributable
 Group:		Libraries
 
@@ -42,7 +40,7 @@ Group:		Libraries
 The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem.
 
 %prep
-%setup -q -n ueagle-atm%{version}
+%setup -q -n ueagle-atm4
 %patch0 -p1
 
 %package kernel-usb-atm
@@ -80,9 +78,13 @@ rm -rf $RPM_BUILD_ROOT
 
 %files kernel%{_alt_kernel}-usb-atm
 %defattr(644,root,root,755)
+%dir /lib/modules/%{_kernel_ver}/drivers/usb/atm/
 /lib/modules/%{_kernel_ver}/drivers/usb/atm/%{_modname}*
 %if %{with firmware}
 %files firmware
 %defattr(644,root,root,755)
-/lib/firmware/ueagle-atm
+%dir /lib/firmware/ueagle-atm
+/lib/firmware/ueagle-atm/e4_dsp_pots.bin
+/lib/firmware/ueagle-atm/eagleIV.fw
+
 %endif

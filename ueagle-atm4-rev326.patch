@@ -1,0 +1,288 @@
+--- ueagle-atm4.old/driver/ueagle-atm.c	2006-11-23 21:13:28.000000000 +0100
++++ ueagle-atm4/ueagle-atm.c	2007-07-01 14:25:17.300691905 +0200
+@@ -64,8 +64,13 @@
+ #include <linux/kthread.h>
+ #include <linux/version.h>
+ #include <linux/mutex.h>
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
++#include <linux/freezer.h>
++#endif
++
+ #include <asm/unaligned.h>
+ 
++
+ #include "usbatm.h"
+ 
+ #define EAGLEUSBVERSION "ueagle 1.4"
+@@ -337,12 +342,24 @@
+ 	 ((a) & 0xff) << 8  |						\
+ 	 ((b) & 0xff))
+ 
++#if 0
+ #define SA_CNTL MAKESA('C', 'N', 'T', 'L')
+ #define SA_DIAG MAKESA('D', 'I', 'A', 'G')
+ #define SA_INFO MAKESA('I', 'N', 'F', 'O')
+ #define SA_OPTN MAKESA('O', 'P', 'T', 'N')
+ #define SA_RATE MAKESA('R', 'A', 'T', 'E')
+ #define SA_STAT MAKESA('S', 'T', 'A', 'T')
++#else
++/* from windows cmv */
++#define SA_CNTL 1
++#define SA_STAT 2
++#define SA_INFO 3
++#define SA_TEST 4
++#define SA_OPTN 5
++#define SA_RATE 6
++#define SA_DIAG 7
++#define SA_CNFG 8
++#endif
+ 
+ 	//XXX merge Address and Index
+ 	__be16 wOffset;
+@@ -736,7 +753,11 @@
+  */
+ static void uea_load_page(void *xsc)
+ {
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,19)
+ 	struct uea_softc *sc = xsc;
++#else
++	struct uea_softc *sc = container_of(xsc, struct uea_softc, task);
++#endif
+ 	u8 pageno = sc->pageno;
+ 	int i;
+ 	struct block_info bi;
+@@ -936,7 +957,7 @@
+ 	data = sc->stats.phy.state;
+ 
+ 	/* XXX only need to be done before operationnal... */
+-	ret = uea_read_cmv(sc, 1, 2, 0, 0, &sc->stats.phy.state);
++	ret = uea_read_cmv(sc, 1, SA_STAT, 0, 0, &sc->stats.phy.state);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -1014,7 +1035,7 @@
+ 	 * we should find the equivalent of eagle3- CMV
+ 	 */
+ 	/* check flags */
+-	ret = uea_read_cmv(sc, 1, 7, 0, 0, &sc->stats.phy.flags);
++	ret = uea_read_cmv(sc, 1, SA_DIAG, 0, 0, &sc->stats.phy.flags);
+ 	if (ret < 0)
+ 		return ret;
+ 	sc->stats.phy.mflags |= sc->stats.phy.flags;
+@@ -1032,12 +1053,12 @@
+ 		return 0;
+ 	}
+ 
+-	ret = uea_read_cmv(sc, 4, 6, 0, 0, &data);
++	ret = uea_read_cmv(sc, 4, SA_RATE, 0, 0, &data);
+ 	if (ret < 0)
+ 		return ret;
+ 	sc->stats.phy.usrate = data / 1000;
+ 
+-	ret = uea_read_cmv(sc, 4, 6, 1, 0, &data);
++	ret = uea_read_cmv(sc, 4, SA_RATE, 1, 0, &data);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -1060,25 +1081,25 @@
+ 	sc->stats.phy.dsrate = data / 1000;
+ 	UPDATE_ATM_STAT(link_rate, sc->stats.phy.dsrate * 1000 / 424);
+ 
+-	ret = uea_read_cmv(sc, 1, 3, 68, 1, &data);
++	ret = uea_read_cmv(sc, 1, SA_INFO, 68, 1, &data);
+ 	if (ret < 0)
+ 		return ret;
+ 	sc->stats.phy.dsattenuation = data / 10;
+ 
+-	ret = uea_read_cmv(sc, 1, 3, 69, 1, &data);
++	ret = uea_read_cmv(sc, 1, SA_INFO, 69, 1, &data);
+ 	if (ret < 0)
+ 		return ret;
+ 	sc->stats.phy.usattenuation = data / 10;
+ 
+-	ret = uea_read_cmv(sc, 1, 3, 68, 3, &data);
++	ret = uea_read_cmv(sc, 1, SA_INFO, 68, 3, &data);
+ 	if (ret < 0)
+ 		return ret;
+-	sc->stats.phy.dsmargin = data / 10;
++	sc->stats.phy.dsmargin = data / 2;
+ 
+-	ret = uea_read_cmv(sc, 1, 3, 69, 3, &data);
++	ret = uea_read_cmv(sc, 1, SA_INFO, 69, 3, &data);
+ 	if (ret < 0)
+ 		return ret;
+-	sc->stats.phy.usmargin = data / 2;
++	sc->stats.phy.usmargin = data / 10;
+ 
+ #if 0
+ 	ret = uea_read_cmv(sc, SA_DIAG, 51, &sc->stats.phy.rxflow);
+@@ -1221,72 +1242,126 @@
+ 	/* XXX try to use a generic format for all CMV ? */
+ 	//old firmware : pots xxxx
+ #if 0
+-	ret = uea_write_cmv(sc, 1, 5, 13, 0, 0x1);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 13, 0, 0x1);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 0, 0, 0x9104);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 3, 0, 0x100);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 0, 0, 0x9104);
++	ret = uea_write_cmv(sc, 1, SA_TEST, 31, 0, 0x602);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 3, 0, 0x100);
++	ret = uea_write_cmv(sc, 1, SA_INFO, 97, 9, 0xf);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 4, 31, 0, 0x602);
++	ret = uea_write_cmv(sc, 1, SA_CNFG, 34, 8, 0x3E8);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 3, 97, 9, 0xf);
++	ret = uea_write_cmv(sc, 1, SA_CNFG, 0, 8, 0x7D0);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 8, 34, 8, 0x3E8);
++	ret = uea_write_cmv(sc, 1, SA_CNTL, 0, 0, 0x2);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 8, 0, 8, 0x7D0);
++#elif defined(SAPO)
++//CMV from sapo (portugal) windows driver
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 13, 0, 0x1);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 1, 0, 0, 0x2);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 0, 0, 0x4);
+ 	if (ret < 0)
+ 		return ret;
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 1, 0, 0x2103);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 20, 0, 0x40);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 21, 0, 0x40);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_TEST, 33, 0, 0xfffe);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_TEST, 32, 0, 0xa0);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_TEST, 31, 0, 0x602);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_INFO, 97, 9, 0xf);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_CNFG, 34, 8, 0x3e8);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_CNFG, 0, 8, 0x7d0);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_INFO, 60, 0, 0xb5);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_INFO, 60, 1, 0x4153);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_INFO, 60, 2, 0x4d47);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_INFO, 61, 0, 0x400);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_INFO, 61, 1, 0x505);
++	if (ret < 0)
++		return ret;
++	ret = uea_write_cmv(sc, 1, SA_CNTL, 0, 0, 0x2);
++	if (ret < 0)
++		return ret;
++
+ #else
+ 	//CMV for 0x0a10050b/3.0.15
+-	ret = uea_write_cmv(sc, 1, 5, 13, 0, 0x1);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 13, 0, 0x1);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 0, 0, 0x1104);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 0, 0, 0x1104);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 1, 0, 0x2103);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 1, 0, 0x2103);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 16, 0, 0x20);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 16, 0, 0x20);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 20, 0, 0x40);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 20, 0, 0x40);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 5, 21, 0, 0x40);
++	ret = uea_write_cmv(sc, 1, SA_OPTN, 21, 0, 0x40);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 4, 33, 0, 0xfffe);
++	ret = uea_write_cmv(sc, 1, SA_TEST, 33, 0, 0xfffe);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 4, 32, 0, 0xa0);
++	ret = uea_write_cmv(sc, 1, SA_TEST, 32, 0, 0xa0);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 4, 31, 0, 0x602);
++	ret = uea_write_cmv(sc, 1, SA_TEST, 31, 0, 0x602);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 3, 97, 9, 0xf);
++	ret = uea_write_cmv(sc, 1, SA_INFO, 97, 9, 0xf);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 8, 34, 8, 0x3e8);
++	ret = uea_write_cmv(sc, 1, SA_CNFG, 34, 8, 0x3e8);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 8, 0, 8, 0x7d0);
++	ret = uea_write_cmv(sc, 1, SA_CNFG, 0, 8, 0x7d0);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 3, 60, 0, 0xb5);
++	ret = uea_write_cmv(sc, 1, SA_INFO, 60, 0, 0xb5);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = uea_write_cmv(sc, 1, 1, 0, 0, 0x2);
++	ret = uea_write_cmv(sc, 1, SA_CNTL, 0, 0, 0x2);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -1301,7 +1376,7 @@
+ 
+ 	/* Dump firmware version */
+ 	/* XXX don't read the 3th byte as it is always 6 */
+-	ret = uea_read_cmv(sc, 2, 3, 55, 0, &sc->stats.phy.firmid);
++	ret = uea_read_cmv(sc, 2, SA_INFO, 55, 0, &sc->stats.phy.firmid);
+ 	if (ret < 0)
+ 		return ret;
+ 	uea_info(INS_TO_USBDEV(sc), "ATU-R firmware version : %x\n",
+@@ -1511,7 +1586,11 @@
+ 
+ 	uea_enters(INS_TO_USBDEV(sc));
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,19)
+ 	INIT_WORK(&sc->task, uea_load_page, sc);
++#else
++	INIT_WORK(&sc->task, uea_load_page);
++#endif
+ 	init_waitqueue_head(&sc->sync_q);
+ 	init_waitqueue_head(&sc->cmv_ack_wait);
+ 

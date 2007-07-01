@@ -1,7 +1,7 @@
 #
 # Conditional build:
 %bcond_without	dist_kernel	# allow non-distribution kernel
-%bcond_without	firmware	# build with firmware
+%bcond_with	firmware	# build with firmware
 %bcond_with	verbose		# verbose build (V=1)
 #
 %define		_modname	ueagle4-atm

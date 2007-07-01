@@ -5,12 +5,12 @@
 %bcond_with	verbose		# verbose build (V=1)
 #
 %define		_modname	ueagle4-atm
-%define		_rel	0.1
+%define		_rel	0.2
 
 Summary:	Linux driver for uEagle-ATM
 Name:		ueagle-atm4
 Version:	1.0
-Release:	%{_rel}@%{_kernel_ver_str}
+Release:	%{_rel}
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://download.gna.org/ueagleatm/%{name}.tar.gz

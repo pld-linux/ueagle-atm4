@@ -11,7 +11,7 @@ Summary:	Linux driver for uEagle-ATM
 Name:		ueagle-atm4
 Version:	1.0
 Release:	%{_rel}@%{_kernel_ver_str}
-License:	GPL v2 (kernel module) and restricted, non-distributable (for firmware)
+License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://download.gna.org/ueagleatm/%{name}.tar.gz
 # Source0-md5:	28c3de526bd52d65a324b0eba4b2f7c4
@@ -45,12 +45,12 @@ The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem.
 %setup -q -n ueagle-atm%{version}
 %patch0 -p1
 
-%package kernel-usb-atm-%{_modname}
+%package kernel-usb-atm
 Summary:	Kernel module for ueagle-atm4
-Group:		Libraries
+Group:		Base/Kernel
 Requires:	%{name} = %{version}-%{release}
 
-%description kernel-usb-atm-%{_modname}
+%description kernel-usb-atm
 Linux kernel module for ueagle-atm4.
 
 %build
@@ -72,13 +72,13 @@ cd driver
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post	kernel%{_alt_kernel}-usb-atm-%{_modname}
+%post	kernel%{_alt_kernel}-usb-atm
 %depmod %{_kernel_ver}
 
-%postun	kernel%{_alt_kernel}-usb-atm-%{_modname}
+%postun	kernel%{_alt_kernel}-usb-atm
 %depmod %{_kernel_ver}
 
-%files kernel%{_alt_kernel}-usb-atm-%{_modname}
+%files kernel%{_alt_kernel}-usb-atm
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/usb/atm/%{_modname}*
 %if %{with firmware}

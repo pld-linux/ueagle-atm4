@@ -67,7 +67,7 @@ install firmware/*.fw $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
 %endif
 
 cd driver
-%install_kernel_modules -m %{_modname} -d usb/atm
+%install_kernel_modules -m %{_modname} -d drivers/usb/atm
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -80,7 +80,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files kernel%{_alt_kernel}-usb-atm
 %defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}/usb/atm/%{_modname}*
+/lib/modules/%{_kernel_ver}/drivers/usb/atm/%{_modname}*
 %if %{with firmware}
 %files firmware
 %defattr(644,root,root,755)

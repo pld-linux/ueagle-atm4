@@ -35,13 +35,10 @@ This driver uEagle-ATM for GNU/Linux (Sagem F@st 800 E4).
 Summary:	The non-free firmware for eagle (SAGEM f@st) USB ADSL modem
 License:	restricted, non-distributable
 Group:		Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %description firmware
 The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem.
-
-%prep
-%setup -q -n ueagle-atm4
-%patch0 -p1
 
 %package kernel-usb-atm
 Summary:	Kernel module for ueagle-atm4
@@ -51,21 +48,23 @@ Requires:	%{name} = %{version}-%{release}
 %description kernel-usb-atm
 Linux kernel module for ueagle-atm4.
 
+%prep
+%setup -q -n ueagle-atm4
+%patch0 -p1
+
 %build
 %build_kernel_modules -m %{_modname} -C driver
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
+%install_kernel_modules  -m driver/%{_modname} -d drivers/usb/atm
+
 %if %{with firmware}
 install -d $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
-
 install firmware/*.bin $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
 install firmware/*.fw $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
 %endif
-
-cd driver
-%install_kernel_modules -m %{_modname} -d drivers/usb/atm
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -78,13 +77,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %files kernel%{_alt_kernel}-usb-atm
 %defattr(644,root,root,755)
-%dir /lib/modules/%{_kernel_ver}/drivers/usb/atm/
-/lib/modules/%{_kernel_ver}/drivers/usb/atm/%{_modname}*
+/lib/modules/%{_kernel_ver}/drivers/usb/atm/%{_modname}.ko*
+
 %if %{with firmware}
 %files firmware
 %defattr(644,root,root,755)
 %dir /lib/firmware/ueagle-atm
 /lib/firmware/ueagle-atm/e4_dsp_pots.bin
 /lib/firmware/ueagle-atm/eagleIV.fw
-
 %endif

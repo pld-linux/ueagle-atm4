@@ -5,7 +5,7 @@
 %bcond_with	verbose		# verbose build (V=1)
 #
 %define		_modname	ueagle4-atm
-%define		_rel	0.2
+%define		_rel	0.3
 
 Summary:	Linux driver for uEagle-ATM
 Name:		ueagle-atm4

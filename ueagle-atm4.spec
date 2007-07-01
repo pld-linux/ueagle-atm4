@@ -5,7 +5,7 @@
 %bcond_with	verbose		# verbose build (V=1)
 #
 %define		_modname	ueagle4-atm
-%define		_rel	0.3
+%define		_rel	0.4
 
 Summary:	Linux driver for uEagle-ATM
 Name:		ueagle-atm4
@@ -43,7 +43,6 @@ The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem.
 %package -n kernel-usb-%{_modname}
 Summary:	Kernel module for ueagle-atm4
 Group:		Base/Kernel
-Requires:	%{name} = %{version}-%{release}
 
 %description -n kernel-usb-%{_modname}
 Linux kernel module for ueagle-atm4.

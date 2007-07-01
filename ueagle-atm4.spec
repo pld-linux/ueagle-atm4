@@ -58,7 +58,7 @@ Linux kernel module for ueagle-atm4.
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%install_kernel_modules  -m driver/%{_modname} -d drivers/usb/atm
+%install_kernel_modules  -m driver/%{_modname} -d kernel/drivers/usb/atm
 
 %if %{with firmware}
 install -d $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n kernel%{_alt_kernel}-usb-%{_modname}
 %defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}/drivers/usb/atm/%{_modname}.ko*
+/lib/modules/%{_kernel_ver}/kernel/drivers/usb/atm/%{_modname}.ko*
 
 %if %{with firmware}
 %files firmware

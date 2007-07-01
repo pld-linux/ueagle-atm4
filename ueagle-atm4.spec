@@ -29,7 +29,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		hotplugfwdir	/lib/firmware
 
 %description
-This driver uEagle-ATM for GNU/Linux (Sagem F@st 800 E4).
+This is the uEagle-ATM driver for GNU/Linux (Sagem F@st 800 E4).
 
 %package firmware
 Summary:	The non-free firmware for eagle (SAGEM f@st) USB ADSL modem

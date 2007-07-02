@@ -8,7 +8,7 @@
 %define		_rel	0.4
 
 Summary:	Linux driver for uEagle-ATM
-Summary(pl.UTF-8):	Sterownik dla Linuksa do modemówSagem F@ST 800 E4
+Summary(pl.UTF-8):	Sterownik dla Linuksa do modemó wSagem F@ST 800 E4
 Name:		ueagle-atm4
 Version:	1.0
 Release:	%{_rel}
@@ -36,7 +36,7 @@ This is the uEagle-ATM driver for GNU/Linux (Sagem F@st 800 E4).
 Sterownik dla Linuksa do modemówSagem F@ST 800 E4
 
 %package firmware
-Summary:	The non-free firmware for eagle (SAGEM f@st) USB ADSL modem
+Summary:	The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem
 Summary(pl.UTF-8):	Firmware dla modemów ADSL eagle (SAGEM f@st) USB
 License:	restricted, non-distributable
 Group:		Libraries
@@ -46,7 +46,7 @@ Requires:	kernel-usb-%{_modname} = %{version}-%{release}
 The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem.
 
 %description -l pl.UTF-8
-Firmware dla modemów ADSL eagle (SAGEM f@ast) USB.
+Firmware dla modemów ADSL eagle (SAGEM f@as E4t) USB.
 
 %package -n kernel-usb-%{_modname}
 Summary:	Kernel module for ueagle-atm4

@@ -37,7 +37,7 @@ Sterownik dla Linuksa do modemówSagem F@ST 800 E4
 
 %package firmware
 Summary:	The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem
-Summary(pl.UTF-8):	Firmware dla modemów ADSL eagle (SAGEM f@st) USB
+Summary(pl.UTF-8):      Firmware dla modemów ADSL eagle (SAGEM f@st E4) USB
 License:	restricted, non-distributable
 Group:		Libraries
 Requires:	kernel-usb-%{_modname} = %{version}-%{release}
@@ -46,8 +46,7 @@ Requires:	kernel-usb-%{_modname} = %{version}-%{release}
 The non-free firmware for eagle (SAGEM f@st E4) USB ADSL modem.
 
 %description -l pl.UTF-8
-Firmware dla modemów ADSL eagle (SAGEM f@as E4t) USB.
-
+Firmware dla modemówUSB ADSL eagle (SAGEM f@st E4).
 %package -n kernel-usb-%{_modname}
 Summary:	Kernel module for ueagle-atm4
 Group:		Base/Kernel

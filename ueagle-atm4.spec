@@ -5,13 +5,13 @@
 %bcond_with	verbose		# verbose build (V=1)
 #
 %define		_modname	ueagle4-atm
-%define		_rel	0.4
 
+%define		rel	1
 Summary:	Linux driver for uEagle-ATM
 Summary(pl.UTF-8):	Sterownik dla Linuksa do modemów Sagem F@ST 800 E4
 Name:		ueagle-atm4
 Version:	1.0
-Release:	%{_rel}
+Release:	%{rel}
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://download.gna.org/ueagleatm/%{name}.tar.gz
@@ -20,11 +20,6 @@ Patch0:		%{name}-rev326.patch
 URL:		https://gna.org/projects/ueagleatm
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.20.2}
 BuildRequires:	rpmbuild(macros) >= 1.379
-Requires(post,postun):	/sbin/depmod
-%if %{with dist_kernel}
-%requires_releq_kernel
-Requires(postun):	%releq_kernel
-%endif
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		hotplugfwdir	/lib/firmware
@@ -40,16 +35,23 @@ Summary:	The non-free firmware for eagle (SAGEM F@ST E4) USB ADSL modem
 Summary(pl.UTF-8):	Firmware dla modemów ADSL eagle (SAGEM F@ST E4) USB
 License:	restricted, non-distributable
 Group:		Libraries
-Requires:	kernel-usb-%{_modname} = %{version}-%{release}
+Requires:	kernel-usb-%{_modname} = %{version}-%{rel}@%{_kernel_ver_str}
 
 %description firmware
 The non-free firmware for eagle (SAGEM F@ST E4) USB ADSL modem.
 
 %description -l pl.UTF-8
 Firmware dla modemówUSB ADSL eagle (SAGEM F@ST E4).
+
 %package -n kernel-usb-%{_modname}
 Summary:	Kernel module for ueagle-atm4
+Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
+Requires(post,postun):	/sbin/depmod
+%if %{with dist_kernel}
+%requires_releq_kernel
+Requires(postun):	%releq_kernel
+%endif
 
 %description -n kernel-usb-%{_modname}
 Linux kernel module for ueagle-atm4.

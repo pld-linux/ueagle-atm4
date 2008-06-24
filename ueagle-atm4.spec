@@ -6,7 +6,7 @@
 #
 %define		_modname	ueagle4-atm
 
-%define		rel	5
+%define		rel	6
 Summary:	Linux driver for uEagle-ATM
 Summary(pl.UTF-8):	Sterownik dla Linuksa do modemów Sagem F@ST 800 E4
 Name:		ueagle-atm4

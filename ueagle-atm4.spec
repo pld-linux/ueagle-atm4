@@ -6,7 +6,7 @@
 #
 %define		_modname	ueagle4-atm
 
-%define		rel	6
+%define		rel	7
 Summary:	Linux driver for uEagle-ATM
 Summary(pl.UTF-8):	Sterownik dla Linuksa do modemów Sagem F@ST 800 E4
 Name:		ueagle-atm4
@@ -20,6 +20,7 @@ Patch0:		%{name}-rev326.patch
 URL:		https://gna.org/projects/ueagleatm
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.20.2}
 BuildRequires:	rpmbuild(macros) >= 1.379
+BuildRequires:	sed >= 4.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		hotplugfwdir	/lib/firmware
@@ -59,6 +60,7 @@ Linux kernel module for ueagle-atm4.
 %prep
 %setup -q -n %{name}
 %patch0 -p1
+%{__sed} -i 's/CFLAGS +=/EXTRA_CFLAGS =/' driver/Makefile
 
 %build
 %build_kernel_modules -m %{_modname} -C driver
@@ -70,6 +72,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %if %{with firmware}
 install -d $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
+install firmware/Ikanos_license.txt $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
 install firmware/*.bin $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
 install firmware/*.fw $RPM_BUILD_ROOT%{hotplugfwdir}/ueagle-atm
 %endif
@@ -97,4 +100,5 @@ EOF
 %dir /lib/firmware/ueagle-atm
 /lib/firmware/ueagle-atm/e4_dsp_pots.bin
 /lib/firmware/ueagle-atm/eagleIV.fw
+/lib/firmware/ueagle-atm/Ikanos_license.txt
 %endif

@@ -36,7 +36,7 @@ Summary:	The non-free firmware for eagle (SAGEM F@ST E4) USB ADSL modem
 Summary(pl.UTF-8):	Firmware dla modemów ADSL eagle (SAGEM F@ST E4) USB
 License:	restricted, non-distributable
 Group:		Libraries
-Requires:	kernel-usb-%{_modname} = %{version}-%{rel}@%{_kernel_ver_str}
+Requires:	kernel%{_alt_kernel}-usb-%{_modname} = %{version}-%{rel}@%{_kernel_ver_str}
 
 %description firmware
 The non-free firmware for eagle (SAGEM F@ST E4) USB ADSL modem.
@@ -44,7 +44,7 @@ The non-free firmware for eagle (SAGEM F@ST E4) USB ADSL modem.
 %description -l pl.UTF-8
 Firmware dla modemówUSB ADSL eagle (SAGEM F@ST E4).
 
-%package -n kernel-usb-%{_modname}
+%package -n kernel%{_alt_kernel}-usb-%{_modname}
 Summary:	Kernel module for ueagle-atm4
 Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
@@ -54,7 +54,7 @@ Requires(post,postun):	/sbin/depmod
 Requires(postun):	%releq_kernel
 %endif
 
-%description -n kernel-usb-%{_modname}
+%description -n kernel%{_alt_kernel}-usb-%{_modname}
 Linux kernel module for ueagle-atm4.
 
 %prep

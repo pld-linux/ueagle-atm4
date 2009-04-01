@@ -6,7 +6,7 @@
 #
 %define		_modname	ueagle4-atm
 
-%define		rel	7
+%define		rel	8
 Summary:	Linux driver for uEagle-ATM
 Summary(pl.UTF-8):	Sterownik dla Linuksa do modemów Sagem F@ST 800 E4
 Name:		ueagle-atm4
@@ -63,7 +63,7 @@ Linux kernel module for ueagle-atm4.
 %{__sed} -i 's/CFLAGS +=/EXTRA_CFLAGS =/' driver/Makefile
 
 %build
-%build_kernel_modules -m %{_modname} -C driver
+%build_kernel_modules -m %{_modname} -C driver "EXTRA_CFLAGS+=-I%{_kernelsrcdir}/drivers/usb/atm"
 
 %install
 rm -rf $RPM_BUILD_ROOT

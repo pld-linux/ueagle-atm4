@@ -41,7 +41,7 @@ Requires:	kernel%{_alt_kernel}-usb-%{_modname} = %{version}-%{rel}@%{_kernel_ver
 %description firmware
 The non-free firmware for eagle (SAGEM F@ST E4) USB ADSL modem.
 
-%description -l pl.UTF-8
+%description firmware -l pl.UTF-8
 Firmware dla modemówUSB ADSL eagle (SAGEM F@ST E4).
 
 %package -n kernel%{_alt_kernel}-usb-%{_modname}

@@ -59,7 +59,7 @@ Linux kernel module for ueagle-atm4.
 
 %prep
 %setup -q -n %{name}
-%patch0 -p1
+%patch -P0 -p1
 %{__sed} -i 's/CFLAGS +=/EXTRA_CFLAGS =/' driver/Makefile
 
 %build
